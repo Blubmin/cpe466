@@ -10,7 +10,14 @@ import java.util.Collection;
 
 public class Lab1 {
   public static void main(String[] args) {
-    DocumentCollection collection = new DocumentCollection("documents.txt.1400");
+    if (args.length < 2) {
+      System.err.println("Usage: Lab01 documentFile outputFile");
+      System.exit(1);
+    }
+    String document_file = args[0];
+    String out_file = args[1];
+
+    DocumentCollection collection = new DocumentCollection(document_file);
     Collection<TextVector> docs = collection.getDocuments();
 
     String word = "";
@@ -30,8 +37,7 @@ public class Lab1 {
     Integer total = docs.stream().mapToInt(v -> v.getTotalWordCount()).sum();
     System.out.println("Total word count = " + total);
 
-    try (ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(new File("" +
-      "./files/docvector")))) {
+    try (ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(new File(out_file)))) {
       os.writeObject(docs);
     } catch (Exception e) {
       System.out.println(e);

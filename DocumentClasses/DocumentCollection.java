@@ -80,7 +80,7 @@ public class DocumentCollection implements Serializable {
   }
 
   public Collection<TextVector> getDocuments() {
-    return documents.values();
+    return new ArrayList<>(documents.values());
   }
 
   public Set<Map.Entry<Integer, TextVector>> getEntrySet() {
