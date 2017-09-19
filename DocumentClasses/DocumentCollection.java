@@ -94,4 +94,28 @@ public class DocumentCollection implements Serializable {
   private boolean isNoiseWord(String word) {
     return Arrays.asList(noiseWordArray).contains(word);
   }
+
+  public int getTotalDistinctWordCount() {
+    return getDocuments().stream().mapToInt(v -> v.getDistinctWordCount()).sum();
+  }
+
+  public int getTotalWordCount() {
+    return getDocuments().stream().mapToInt(v -> v.getTotalWordCount()).sum();
+  }
+
+  public String getMostFrequentWord() {
+    String word = "";
+    Integer freq = 0;
+    for (TextVector doc : getDocuments()) {
+      if (doc.getHighestRawFrequency() > freq) {
+        word = doc.getMostFrequentWord();
+        freq = doc.getHighestRawFrequency();
+      }
+    }
+    return word;
+  }
+
+  public int getHighestRawFrequency() {
+    return getDocuments().stream().mapToInt(v -> v.getHighestRawFrequency()).max().orElse(0);
+  }
 }

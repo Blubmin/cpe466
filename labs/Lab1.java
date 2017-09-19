@@ -17,25 +17,12 @@ public class Lab1 {
     String document_file = args[0];
     String out_file = args[1];
 
-    DocumentCollection collection = new DocumentCollection(document_file);
-    Collection<TextVector> docs = collection.getDocuments();
+    DocumentCollection docs = new DocumentCollection(document_file);
 
-    String word = "";
-    Integer freq = 0;
-    for (TextVector doc : docs) {
-      if (doc.getHighestRawFrequency() > freq) {
-        word = doc.getMostFrequentWord();
-        freq = doc.getHighestRawFrequency();
-      }
-    }
-    System.out.println("Word = " + word);
-    System.out.println("Frequency = " + freq);
-
-    Integer count = docs.stream().mapToInt(v -> v.getDistinctWordCount()).sum();
-    System.out.println("Distinct Number of Words = " + count);
-
-    Integer total = docs.stream().mapToInt(v -> v.getTotalWordCount()).sum();
-    System.out.println("Total word count = " + total);
+    System.out.println("Word = " + docs.getMostFrequentWord());
+    System.out.println("Frequency = " + docs.getHighestRawFrequency());
+    System.out.println("Distinct Number of Words = " + docs.getTotalDistinctWordCount());
+    System.out.println("Total word count = " + docs.getTotalWordCount());
 
     try (ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(new File(out_file)))) {
       os.writeObject(docs);
