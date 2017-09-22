@@ -1,5 +1,6 @@
 package labs;
 
+import DocumentClasses.CosineDistance;
 import DocumentClasses.DocumentCollection;
 
 public class Lab2 {
@@ -17,5 +18,10 @@ public class Lab2 {
 
     String query_file = args[1];
     queries = new DocumentCollection(query_file, "query");
+
+    documents.normalize(documents);
+    queries.normalize(queries);
+
+    System.out.println(queries.getDocumentById(1).findClosestDocuments(documents, new CosineDistance()));
   }
 }

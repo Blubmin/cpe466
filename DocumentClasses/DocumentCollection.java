@@ -77,10 +77,9 @@ public class DocumentCollection implements Serializable {
   public static DocumentCollection deserialize(String filename) {
     DocumentCollection collection = null;
     try (ObjectInputStream is = new
-      ObjectInputStream(new FileInputStream(new File(filename))))
-    {
+      ObjectInputStream(new FileInputStream(new File(filename)))) {
       collection = (DocumentCollection) is.readObject();
-    } catch(Exception e){
+    } catch (Exception e) {
       System.out.println(e);
     }
     return collection;
@@ -109,6 +108,12 @@ public class DocumentCollection implements Serializable {
 
   public int getDocumentFrequency(String word) {
     return getDocuments().stream().mapToInt((TextVector v) -> v.contains(word) ? 1 : 0).sum();
+  }
+
+  public double getInverseDocumentFrequency(String word) {
+    double freq = getDocumentFrequency(word);
+    if (freq == 0) return 0;
+    return Math.log(getSize() / freq) / Math.log(2);
   }
 
   private boolean isNoiseWord(String word) {
@@ -140,6 +145,6 @@ public class DocumentCollection implements Serializable {
   }
 
   public void normalize(DocumentCollection dc) {
-
+    for (TextVector v : documents.values()) v.normalize(dc);
   }
 }

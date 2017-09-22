@@ -1,10 +1,9 @@
 package DocumentClasses;
 
+import javax.xml.soap.Text;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class TextVector implements Serializable {
 
@@ -58,11 +57,37 @@ public abstract class TextVector implements Serializable {
   public abstract double getNormalizedFrequency(String word);
 
   public double getL2Norm() {
-    return 0;
+    return Math.sqrt(
+      rawVector
+        .keySet()
+        .stream()
+        .mapToDouble(k -> Math.pow(getNormalizedFrequency(k), 2))
+        .sum()
+    );
   }
 
   public ArrayList<Integer> findClosestDocuments(DocumentCollection documents,
                                                  DocumentDistance distanceAlg) {
-    return null;
+    return findClosestDocuments(documents, distanceAlg, 20);
+  }
+
+  public ArrayList<Integer> findClosestDocuments(DocumentCollection documents, DocumentDistance
+    distanceAlg, int num) {
+    List<Map.Entry<Integer, TextVector>> entries = new ArrayList<>(documents.getEntrySet());
+
+    Collections.sort(entries, (e1, e2) -> distanceAlg.findDistance(this, e1.getValue(), documents) < distanceAlg
+      .findDistance(this, e2.getValue(), documents) ? -1 : 1);
+
+    List<Integer> sub_list = entries.stream().map(e -> e.getKey()).collect(Collectors.toList());
+//    return new ArrayList<>(sub_list.subList(0, num));
+    return new ArrayList<>(sub_list);
+  }
+
+  public double dot(TextVector other) {
+    return rawVector
+      .keySet()
+      .stream()
+      .mapToInt(k -> getRawFrequency(k) * other.getRawFrequency(k))
+      .sum();
   }
 }
