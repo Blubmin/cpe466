@@ -24,10 +24,6 @@ public class Lab1 {
     System.out.println("Distinct Number of Words = " + docs.getTotalDistinctWordCount());
     System.out.println("Total word count = " + docs.getTotalWordCount());
 
-    try (ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(new File(out_file)))) {
-      os.writeObject(docs);
-    } catch (Exception e) {
-      System.out.println(e);
-    }
+    DocumentCollection.serialize(docs, out_file);
   }
 }

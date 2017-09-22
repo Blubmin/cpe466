@@ -66,6 +66,26 @@ public class DocumentCollection implements Serializable {
     }
   }
 
+  public static void serialize(DocumentCollection collection, String filename) {
+    try (ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(new File(filename)))) {
+      os.writeObject(collection);
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+  }
+
+  public static DocumentCollection deserialize(String filename) {
+    DocumentCollection collection = null;
+    try (ObjectInputStream is = new
+      ObjectInputStream(new FileInputStream(new File(filename))))
+    {
+      collection = (DocumentCollection) is.readObject();
+    } catch(Exception e){
+      System.out.println(e);
+    }
+    return collection;
+  }
+
   public TextVector getDocumentById(int id) {
     return documents.get(id);
   }
