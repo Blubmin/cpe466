@@ -16,6 +16,6 @@ public class Lab2 {
     documents = DocumentCollection.deserialize(doc_file);
 
     String query_file = args[1];
-    queries = new DocumentCollection(query_file);
+    queries = new DocumentCollection(query_file, "query");
   }
 }

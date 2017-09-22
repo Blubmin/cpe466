@@ -27,7 +27,7 @@ public class DocumentCollection implements Serializable {
 
   private HashMap<Integer, TextVector> documents;
 
-  public DocumentCollection(String filename) {
+  public DocumentCollection(String filename, String type) {
     documents = new HashMap<>();
 
     try (Stream<String> stream = Files.lines(Paths.get(filename))) {
@@ -42,7 +42,7 @@ public class DocumentCollection implements Serializable {
         if (args[0].equals(".I")) {
           if (textVector != null) documents.put(id, textVector);
           id = Integer.parseInt(args[1]);
-          textVector = new TextVector();
+          textVector = type.equals("document") ? new DocumentVector() : new QueryVector();
           readText = false;
           continue;
         }
@@ -137,5 +137,9 @@ public class DocumentCollection implements Serializable {
 
   public int getHighestRawFrequency() {
     return getDocuments().stream().mapToInt(v -> v.getHighestRawFrequency()).max().orElse(0);
+  }
+
+  public void normalize(DocumentCollection dc) {
+
   }
 }

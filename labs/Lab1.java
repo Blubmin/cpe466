@@ -17,7 +17,7 @@ public class Lab1 {
     String document_file = args[0];
     String out_file = args[1];
 
-    DocumentCollection docs = new DocumentCollection(document_file);
+    DocumentCollection docs = new DocumentCollection(document_file, "document");
 
     System.out.println("Word = " + docs.getMostFrequentWord());
     System.out.println("Frequency = " + docs.getHighestRawFrequency());
