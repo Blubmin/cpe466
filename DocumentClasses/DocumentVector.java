@@ -20,7 +20,7 @@ public class DocumentVector extends TextVector {
   public void normalize(DocumentCollection dc) {
     for (Map.Entry<String, Integer> e : getRawVectorEntrySet()) {
       String word = e.getKey();
-      Double weight = e.getValue() / (double) getHighestRawFrequency()
+      Double weight = (e.getValue() / (double) getHighestRawFrequency())
         * dc.getInverseDocumentFrequency(word);
       normalizedVector.put(word, weight);
     }
@@ -28,6 +28,6 @@ public class DocumentVector extends TextVector {
 
   @Override
   public double getNormalizedFrequency(String word) {
-    return normalizedVector.get(word);
+    return normalizedVector.getOrDefault(word, 0.0);
   }
 }

@@ -2,6 +2,10 @@ package labs;
 
 import DocumentClasses.CosineDistance;
 import DocumentClasses.DocumentCollection;
+import DocumentClasses.TextVector;
+
+import javax.xml.soap.Text;
+import java.util.Map;
 
 public class Lab2 {
   public static DocumentCollection documents;
@@ -20,8 +24,12 @@ public class Lab2 {
     queries = new DocumentCollection(query_file, "query");
 
     documents.normalize(documents);
-    queries.normalize(queries);
+    queries.normalize(documents);
 
-    System.out.println(queries.getDocumentById(1).findClosestDocuments(documents, new CosineDistance()));
+    CosineDistance cos = new CosineDistance();
+    for (Map.Entry<Integer, TextVector> entry : queries.getEntrySet()) {
+      System.out.print(entry.getKey() + ": ");
+      System.out.println(entry.getValue().findClosestDocuments(documents, cos));
+    }
   }
 }

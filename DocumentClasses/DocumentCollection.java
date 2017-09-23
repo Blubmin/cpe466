@@ -70,7 +70,7 @@ public class DocumentCollection implements Serializable {
     try (ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(new File(filename)))) {
       os.writeObject(collection);
     } catch (Exception e) {
-      System.out.println(e);
+      System.err.println(e);
     }
   }
 
@@ -80,7 +80,7 @@ public class DocumentCollection implements Serializable {
       ObjectInputStream(new FileInputStream(new File(filename)))) {
       collection = (DocumentCollection) is.readObject();
     } catch (Exception e) {
-      System.out.println(e);
+      System.err.println(e);
     }
     return collection;
   }
@@ -142,6 +142,10 @@ public class DocumentCollection implements Serializable {
 
   public int getHighestRawFrequency() {
     return getDocuments().stream().mapToInt(v -> v.getHighestRawFrequency()).max().orElse(0);
+  }
+
+  public int getHighestWordFrequency(String word) {
+    return getDocuments().stream().mapToInt(v -> v.getRawFrequency(word)).max().orElse(0);
   }
 
   public void normalize(DocumentCollection dc) {

@@ -21,15 +21,13 @@ public class QueryVector extends TextVector {
     for (Map.Entry<String, Integer> e : getRawVectorEntrySet()) {
       String word = e.getKey();
       Double idf = dc.getInverseDocumentFrequency(word);
-      Double weight = 0.5;
-      if (idf != 0)
-        weight += 0.5 * e.getValue() / (double) getHighestRawFrequency() * idf;
+      Double weight = (0.5 + 0.5 * e.getValue() / (double) getHighestRawFrequency()) * idf;
       normalizedVector.put(word, weight);
     }
   }
 
   @Override
   public double getNormalizedFrequency(String word) {
-    return normalizedVector.get(word);
+    return normalizedVector.getOrDefault(word, 0.0);
   }
 }

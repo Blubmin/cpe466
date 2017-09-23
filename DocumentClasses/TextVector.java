@@ -18,8 +18,7 @@ public abstract class TextVector implements Serializable {
   }
 
   public void add(String word) {
-    Integer count = contains(word) ? rawVector.get(word) : 0;
-    rawVector.put(word, count + 1);
+    rawVector.put(word, rawVector.getOrDefault(word, 0) + 1);
   }
 
   public boolean contains(String word) {
@@ -75,12 +74,13 @@ public abstract class TextVector implements Serializable {
     distanceAlg, int num) {
     List<Map.Entry<Integer, TextVector>> entries = new ArrayList<>(documents.getEntrySet());
 
-    Collections.sort(entries, (e1, e2) -> distanceAlg.findDistance(this, e1.getValue(), documents) < distanceAlg
-      .findDistance(this, e2.getValue(), documents) ? -1 : 1);
-
+    Collections.sort(entries, (e1, e2) ->
+      distanceAlg.findDistance(this, e1.getValue(), documents)
+        < distanceAlg.findDistance(this, e2.getValue(), documents) ? -1 : 1
+    );
+    Collections.reverse(entries);
     List<Integer> sub_list = entries.stream().map(e -> e.getKey()).collect(Collectors.toList());
-//    return new ArrayList<>(sub_list.subList(0, num));
-    return new ArrayList<>(sub_list);
+    return new ArrayList<>(sub_list.subList(0, num));
   }
 
   public double dot(TextVector other) {
@@ -88,6 +88,13 @@ public abstract class TextVector implements Serializable {
       .keySet()
       .stream()
       .mapToInt(k -> getRawFrequency(k) * other.getRawFrequency(k))
+      .sum();
+  }
+
+  public double normalized_dot(TextVector other) {
+    return getNormalizedVectorEntrySet()
+      .stream()
+      .mapToDouble(e -> e.getValue() * other.getNormalizedFrequency(e.getKey()))
       .sum();
   }
 }
