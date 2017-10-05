@@ -9,8 +9,21 @@ public abstract class TextVector implements Serializable {
 
   private HashMap<String, Integer> rawVector;
 
+  private Integer id;
+
+  private HashMap<Integer, Integer> dots;
+
+  private HashMap<Integer, Double> norm_dots;
+
   public TextVector() {
+    this(-1);
+  }
+
+  public TextVector(int id) {
     rawVector = new HashMap<>();
+    this.id = id;
+    dots = new HashMap<>();
+    norm_dots = new HashMap<>();
   }
 
   public Set<Map.Entry<String, Integer>> getRawVectorEntrySet() {
@@ -25,12 +38,16 @@ public abstract class TextVector implements Serializable {
     return rawVector.containsKey(word);
   }
 
+  public int getId() {
+    return id;
+  }
+
   public int getRawFrequency(String word) {
     return rawVector.getOrDefault(word, 0);
   }
 
   public int getTotalWordCount() {
-    return rawVector.values().stream().reduce(0, Integer::sum);
+    return rawVector.values().parallelStream().reduce(0, Integer::sum);
   }
 
   public int getDistinctWordCount() {
@@ -38,7 +55,7 @@ public abstract class TextVector implements Serializable {
   }
 
   public int getHighestRawFrequency() {
-    return rawVector.values().stream().reduce(0, Integer::max);
+    return rawVector.values().parallelStream().reduce(0, Integer::max);
   }
 
   public String getMostFrequentWord() {
@@ -59,7 +76,7 @@ public abstract class TextVector implements Serializable {
     return Math.sqrt(
       rawVector
         .keySet()
-        .stream()
+        .parallelStream()
         .mapToDouble(k -> Math.pow(getNormalizedFrequency(k), 2))
         .sum()
     );
@@ -79,22 +96,34 @@ public abstract class TextVector implements Serializable {
         < distanceAlg.findDistance(this, e2.getValue(), documents) ? -1 : 1
     );
     Collections.reverse(entries);
-    List<Integer> sub_list = entries.stream().map(e -> e.getKey()).collect(Collectors.toList());
+    List<Integer> sub_list = entries.parallelStream().map(e -> e.getKey()).collect(Collectors
+      .toList());
     return new ArrayList<>(sub_list.subList(0, num));
   }
 
-  public double dot(TextVector other) {
-    return rawVector
-      .keySet()
-      .stream()
-      .mapToInt(k -> getRawFrequency(k) * other.getRawFrequency(k))
-      .sum();
+  public int dot(TextVector other) {
+    if (!dots.containsKey(other.id))
+      dots.put(other.id, rawVector
+        .keySet()
+        .parallelStream()
+        .mapToInt(k -> getRawFrequency(k) * other.getRawFrequency(k))
+        .sum()
+      );
+    return dots.get(other.id);
   }
 
   public double normalized_dot(TextVector other) {
-    return getNormalizedVectorEntrySet()
-      .stream()
-      .mapToDouble(e -> e.getValue() * other.getNormalizedFrequency(e.getKey()))
-      .sum();
+    if (!norm_dots.containsKey(other.id))
+      norm_dots.put(other.id, getNormalizedVectorEntrySet()
+        .parallelStream()
+        .mapToDouble(e -> e.getValue() * other.getNormalizedFrequency(e.getKey()))
+        .sum()
+      );
+    return norm_dots.get(other.id);
+  }
+
+  @Override
+  public String toString() {
+    return "" + id;
   }
 }

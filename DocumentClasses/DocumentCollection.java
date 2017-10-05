@@ -41,8 +41,8 @@ public class DocumentCollection implements Serializable {
 
         if (args[0].equals(".I")) {
           if (textVector != null) documents.put(id, textVector);
-          id = Integer.parseInt(args[1]);
-          textVector = type.equals("document") ? new DocumentVector() : new QueryVector();
+          id = type.equals("document") ? Integer.parseInt(args[1]) : id + 1;
+          textVector = type.equals("document") ? new DocumentVector(id) : new QueryVector(id);
           readText = false;
           continue;
         }
@@ -91,7 +91,7 @@ public class DocumentCollection implements Serializable {
 
   public double getAverageDocumentLength() {
     return getDocuments()
-      .stream().mapToInt((TextVector v) -> v.getTotalWordCount()).average().orElse(0);
+      .parallelStream().mapToInt((TextVector v) -> v.getTotalWordCount()).average().orElse(0);
   }
 
   public int getSize() {
@@ -107,7 +107,8 @@ public class DocumentCollection implements Serializable {
   }
 
   public int getDocumentFrequency(String word) {
-    return getDocuments().stream().mapToInt((TextVector v) -> v.contains(word) ? 1 : 0).sum();
+    return getDocuments().parallelStream().mapToInt((TextVector v) -> v.contains(word) ? 1 : 0)
+      .sum();
   }
 
   public double getInverseDocumentFrequency(String word) {
@@ -121,11 +122,11 @@ public class DocumentCollection implements Serializable {
   }
 
   public int getTotalDistinctWordCount() {
-    return getDocuments().stream().mapToInt(v -> v.getDistinctWordCount()).sum();
+    return getDocuments().parallelStream().mapToInt(v -> v.getDistinctWordCount()).sum();
   }
 
   public int getTotalWordCount() {
-    return getDocuments().stream().mapToInt(v -> v.getTotalWordCount()).sum();
+    return getDocuments().parallelStream().mapToInt(v -> v.getTotalWordCount()).sum();
   }
 
   public String getMostFrequentWord() {
@@ -141,11 +142,12 @@ public class DocumentCollection implements Serializable {
   }
 
   public int getHighestRawFrequency() {
-    return getDocuments().stream().mapToInt(v -> v.getHighestRawFrequency()).max().orElse(0);
+    return getDocuments().parallelStream().mapToInt(v -> v.getHighestRawFrequency()).max().orElse
+      (0);
   }
 
   public int getHighestWordFrequency(String word) {
-    return getDocuments().stream().mapToInt(v -> v.getRawFrequency(word)).max().orElse(0);
+    return getDocuments().parallelStream().mapToInt(v -> v.getRawFrequency(word)).max().orElse(0);
   }
 
   public void normalize(DocumentCollection dc) {
