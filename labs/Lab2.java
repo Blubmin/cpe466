@@ -2,6 +2,7 @@ package labs;
 
 import DocumentClasses.CosineDistance;
 import DocumentClasses.DocumentCollection;
+import DocumentClasses.DocumentDistance;
 import DocumentClasses.TextVector;
 
 import javax.xml.soap.Text;
@@ -26,7 +27,7 @@ public class Lab2 {
     documents = DocumentCollection.deserialize(doc_file);
 
     String query_file = args[1];
-    queries = new DocumentCollection(query_file, "query");
+    queries = DocumentCollection.deserialize(query_file);
 
     documents.normalize(documents);
     queries.normalize(documents);
