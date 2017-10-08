@@ -1,6 +1,5 @@
 package DocumentClasses;
 
-import javax.xml.soap.Text;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -9,26 +8,42 @@ import java.util.stream.Stream;
 
 public class DocumentCollection implements Serializable {
 
-  private static String noiseWordArray[] = {"a", "about", "above", "all", "along", "also",
-    "although", "am", "an", "and", "any", "are", "aren't", "as", "at", "be", "because", "been",
-    "but", "by", "can", "cannot", "could", "couldn't", "did", "didn't", "do", "does", "doesn't",
-    "e.g.", "either", "etc", "etc.", "even", "ever", "enough", "for", "from", "further", "get",
-    "gets", "got", "had", "have", "hardly", "has", "hasn't", "having", "he", "hence", "her",
-    "here", "hereby", "herein", "hereof", "hereon", "hereto", "herewith", "him", "his", "how",
-    "however", "i", "i.e.", "if", "in", "into", "it", "it's", "its", "me", "more", "most", "mr",
-    "my", "near", "nor", "now", "no", "not", "or", "on", "of", "onto", "other", "our", "out",
-    "over", "really", "said", "same", "she", "should", "shouldn't", "since", "so", "some",
-    "such", "than", "that", "the", "their", "them", "then", "there", "thereby", "therefore",
-    "therefrom", "therein", "thereof", "thereon", "thereto", "therewith", "these", "they",
-    "this", "those", "through", "thus", "to", "too", "under", "until", "unto", "upon", "us",
-    "very", "was", "wasn't", "we", "were", "what", "when", "where", "whereby", "wherein",
+  private static List<String> noiseWordArray = Arrays.asList("a", "about", "above", "all",
+    "along", "also", "although", "am", "an", "and", "any", "are", "aren't", "as", "at", "be",
+    "because", "been", "but", "by", "can", "cannot", "could", "couldn't", "did", "didn't", "do",
+    "does", "doesn't", "e.g.", "either", "etc", "etc.", "even", "ever", "enough", "for", "from",
+    "further", "get", "gets", "got", "had", "have", "hardly", "has", "hasn't", "having", "he",
+    "hence", "her", "here", "hereby", "herein", "hereof", "hereon", "hereto", "herewith", "him",
+    "his", "how", "however", "i", "i.e.", "if", "in", "into", "it", "it's", "its", "me", "more",
+    "most", "mr", "my", "near", "nor", "now", "no", "not", "or", "on", "of", "onto", "other",
+    "our", "out", "over", "really", "said", "same", "she", "should", "shouldn't", "since", "so",
+    "some", "such", "than", "that", "the", "their", "them", "then", "there", "thereby",
+    "therefore", "therefrom", "therein", "thereof", "thereon", "thereto", "therewith", "these",
+    "they", "this", "those", "through", "thus", "to", "too", "under", "until", "unto", "upon",
+    "us", "very", "was", "wasn't", "we", "were", "what", "when", "where", "whereby", "wherein",
     "whether", "which", "while", "who", "whom", "whose", "why", "with", "without", "would",
-    "you", "your", "yours", "yes"};
+    "you", "your", "yours", "yes");
 
   private HashMap<Integer, TextVector> documents;
 
+  private double averageLength;
+  private boolean computeAverageLength;
+
+  private HashMap<String, Integer> docFreq;
+  private HashMap<String, Double> invDocFreq;
+
+  private int totalWordCount;
+  private boolean computeTotalWordCount;
+  private int distinctWordCount;
+  private boolean computeDistinctWordCount;
+
   public DocumentCollection(String filename, String type) {
     documents = new HashMap<>();
+
+    averageLength = 0;
+    totalWordCount = 0;
+    distinctWordCount = 0;
+    setRecompute();
 
     try (Stream<String> stream = Files.lines(Paths.get(filename))) {
       Integer id = 0;
@@ -85,13 +100,25 @@ public class DocumentCollection implements Serializable {
     return collection;
   }
 
+  private void setRecompute() {
+    computeAverageLength = true;
+    docFreq = new HashMap<>();
+    invDocFreq = new HashMap<>();
+    computeTotalWordCount = true;
+    computeDistinctWordCount = true;
+  }
+
   public TextVector getDocumentById(int id) {
     return documents.get(id);
   }
 
   public double getAverageDocumentLength() {
-    return getDocuments()
-      .parallelStream().mapToInt((TextVector v) -> v.getTotalWordCount()).average().orElse(0);
+    if (computeAverageLength) {
+      averageLength = getDocuments()
+        .parallelStream().mapToInt((TextVector v) -> v.getTotalWordCount()).average().orElse(0);
+      computeAverageLength = false;
+    }
+    return averageLength;
   }
 
   public int getSize() {
@@ -107,26 +134,43 @@ public class DocumentCollection implements Serializable {
   }
 
   public int getDocumentFrequency(String word) {
-    return getDocuments().parallelStream().mapToInt((TextVector v) -> v.contains(word) ? 1 : 0)
-      .sum();
+    if (!docFreq.containsKey(word))
+      docFreq.put(word, getDocuments().parallelStream().mapToInt((TextVector v) -> v.contains
+        (word) ? 1 : 0)
+        .sum());
+    return docFreq.get(word);
   }
 
   public double getInverseDocumentFrequency(String word) {
-    double freq = getDocumentFrequency(word);
-    if (freq == 0) return 0;
-    return Math.log(getSize() / freq) / Math.log(2);
+    if (!invDocFreq.containsKey(word)) {
+      double freq = getDocumentFrequency(word);
+      if (freq == 0) return 0;
+      invDocFreq.put(word, Math.log(getSize() / freq) / Math.log(2));
+    }
+    return invDocFreq.get(word);
   }
 
   private boolean isNoiseWord(String word) {
-    return Arrays.asList(noiseWordArray).contains(word);
+    return noiseWordArray.contains(word);
   }
 
   public int getTotalDistinctWordCount() {
-    return getDocuments().parallelStream().mapToInt(v -> v.getDistinctWordCount()).sum();
+    if (computeDistinctWordCount) {
+      distinctWordCount = getDocuments()
+        .parallelStream()
+        .mapToInt(v -> v.getDistinctWordCount())
+        .sum();
+      computeDistinctWordCount = false;
+    }
+    return distinctWordCount;
   }
 
   public int getTotalWordCount() {
-    return getDocuments().parallelStream().mapToInt(v -> v.getTotalWordCount()).sum();
+    if (computeTotalWordCount) {
+      totalWordCount = getDocuments().parallelStream().mapToInt(v -> v.getTotalWordCount()).sum();
+      computeTotalWordCount = false;
+    }
+    return totalWordCount;
   }
 
   public String getMostFrequentWord() {

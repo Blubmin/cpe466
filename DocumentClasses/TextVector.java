@@ -8,12 +8,7 @@ import java.util.stream.Collectors;
 public abstract class TextVector implements Serializable {
 
   private HashMap<String, Integer> rawVector;
-
   private Integer id;
-
-  private HashMap<Integer, Integer> dots;
-
-  private HashMap<Integer, Double> norm_dots;
 
   public TextVector() {
     this(-1);
@@ -22,8 +17,6 @@ public abstract class TextVector implements Serializable {
   public TextVector(int id) {
     rawVector = new HashMap<>();
     this.id = id;
-    dots = new HashMap<>();
-    norm_dots = new HashMap<>();
   }
 
   public Set<Map.Entry<String, Integer>> getRawVectorEntrySet() {
@@ -91,35 +84,33 @@ public abstract class TextVector implements Serializable {
     distanceAlg, int num) {
     List<Map.Entry<Integer, TextVector>> entries = new ArrayList<>(documents.getEntrySet());
 
-    Collections.sort(entries, (e1, e2) ->
-      distanceAlg.findDistance(this, e1.getValue(), documents)
-        < distanceAlg.findDistance(this, e2.getValue(), documents) ? -1 : 1
-    );
-    Collections.reverse(entries);
-    List<Integer> sub_list = entries.parallelStream().map(e -> e.getKey()).collect(Collectors
+    List<Map.Entry<Integer, Double>> distances = entries.parallelStream().map(e -> new
+      AbstractMap.SimpleEntry<>(e.getKey(), distanceAlg.findDistance(this, e
+      .getValue(), documents))).collect(Collectors.toList());
+//    Collections.sort(entries, (e1, e2) ->
+//      distanceAlg.findDistance(this, e1.getValue(), documents)
+//        < distanceAlg.findDistance(this, e2.getValue(), documents) ? -1 : 1
+//    );
+    Collections.sort(distances, (e1, e2) -> e1.getValue() < e2.getValue() ? -1 : 1);
+    Collections.reverse(distances);
+    List<Integer> sub_list = distances.parallelStream().map(e -> e.getKey()).collect(Collectors
       .toList());
     return new ArrayList<>(sub_list.subList(0, num));
   }
 
   public int dot(TextVector other) {
-    if (!dots.containsKey(other.id))
-      dots.put(other.id, rawVector
-        .keySet()
-        .parallelStream()
-        .mapToInt(k -> getRawFrequency(k) * other.getRawFrequency(k))
-        .sum()
-      );
-    return dots.get(other.id);
+    return rawVector
+      .keySet()
+      .parallelStream()
+      .mapToInt(k -> getRawFrequency(k) * other.getRawFrequency(k))
+      .sum();
   }
 
   public double normalized_dot(TextVector other) {
-    if (!norm_dots.containsKey(other.id))
-      norm_dots.put(other.id, getNormalizedVectorEntrySet()
-        .parallelStream()
-        .mapToDouble(e -> e.getValue() * other.getNormalizedFrequency(e.getKey()))
-        .sum()
-      );
-    return norm_dots.get(other.id);
+    return getNormalizedVectorEntrySet()
+      .parallelStream()
+      .mapToDouble(e -> e.getValue() * other.getNormalizedFrequency(e.getKey()))
+      .sum();
   }
 
   @Override

@@ -1,9 +1,6 @@
 package labs;
 
-import DocumentClasses.CosineDistance;
-import DocumentClasses.DocumentCollection;
-import DocumentClasses.DocumentDistance;
-import DocumentClasses.TextVector;
+import DocumentClasses.*;
 
 import javax.xml.soap.Text;
 import java.io.File;
@@ -18,8 +15,8 @@ public class Lab2 {
   public static DocumentCollection queries;
 
   public static void main(String[] args) {
-    if (args.length != 3) {
-      System.err.println("Usage: Lab02 documentCollectionFile queryFile outputFile");
+    if (args.length != 4) {
+      System.err.println("Usage: Lab02 documentCollectionFile queryFile distanceAlg outputFile");
       System.exit(1);
     }
 
@@ -29,19 +26,22 @@ public class Lab2 {
     String query_file = args[1];
     queries = DocumentCollection.deserialize(query_file);
 
-    documents.normalize(documents);
-    queries.normalize(documents);
+    String distanceAlgType = args[2];
+    DocumentDistance distanceAlg = distanceAlgType.equals("okapi") ? new OkapiDistance() : new
+      CosineDistance();
 
-    CosineDistance cos = new CosineDistance();
-    HashMap<Integer, ArrayList<Integer>> results = new HashMap<>();
-    int counter = 1;
-    for (Map.Entry<Integer, TextVector> entry : queries.getEntrySet()) {
-      results.put(counter, entry.getValue().findClosestDocuments(documents, cos));
-      System.out.println("" + counter + ": " + results.get(counter));
-      counter++;
+    if (distanceAlgType.equals("cosine")) {
+      documents.normalize(documents);
+      queries.normalize(documents);
     }
 
-    String out_file = args[2];
+    HashMap<Integer, ArrayList<Integer>> results = new HashMap<>();
+    for (Map.Entry<Integer, TextVector> query : queries.getEntrySet()) {
+      results.put(query.getKey(), query.getValue().findClosestDocuments(documents, distanceAlg));
+      System.out.println("" + query.getKey() + ": " + results.get(query.getKey()));
+    }
+
+    String out_file = args[3];
     try (ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(new File(out_file)))) {
       os.writeObject(results);
     } catch (Exception e) {
