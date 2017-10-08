@@ -96,8 +96,10 @@ public class Lab3 {
 
   private static List<Map.Entry<Integer, ArrayList<Integer>>> getTopNResults(HashMap<Integer,
     ArrayList<Integer>> tfIdf, Integer n) {
-    List<Map.Entry<Integer, ArrayList<Integer>>> list = tfIdf.entrySet().parallelStream().collect
-      (Collectors.toList());
+    List<Map.Entry<Integer, ArrayList<Integer>>> list = tfIdf
+      .entrySet()
+      .parallelStream()
+      .collect(Collectors.toList());
     Collections.sort(list, Comparator.comparingInt(Map.Entry::getKey));
     return list.subList(0, n);
   }

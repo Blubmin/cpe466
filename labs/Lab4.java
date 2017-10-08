@@ -11,5 +11,8 @@ public class Lab4 {
 
     String graphFile = args[0];
     Graph graph = new Graph(graphFile);
+
+    graph.pageRank();
+    System.out.println(graph.topPages());
   }
 }
