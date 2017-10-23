@@ -58,9 +58,9 @@ public class Graph {
   }
 
   private void normalize(HashMap<Integer, Double> vector) {
-    double magnitude = getMagnitude(vector);
+    double sum = vector.values().parallelStream().mapToDouble(d -> d).sum();
     for (Integer node : nodes)
-      vector.put(node, vector.get(node) / magnitude);
+      vector.put(node, vector.get(node) / sum);
   }
 
   public int getNumPages() {
@@ -70,10 +70,7 @@ public class Graph {
   public void pageRank() {
     double distance = Double.MAX_VALUE;
     double d = .9;
-    int iteration = 1;
     while (distance >= .001) {
-//      System.out.println("Iteration: " + iteration++);
-//      System.out.println("Distance: " + distance);
       pageRankOld = (HashMap<Integer, Double>) pageRankNew.clone();
 
       double firstTerm = (1 - d) / (double) getNumPages();
