@@ -12,5 +12,6 @@ public class Lab7 {
     String data_file = args[0];
     DecisionTree tree = new DecisionTree(data_file);
     tree.computeTree();
+    System.out.println(tree);
   }
 }

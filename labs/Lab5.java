@@ -1,10 +1,6 @@
 package labs;
 
-import ItemSetClasses.ItemSet;
 import ItemSetClasses.Transactions;
-
-import java.util.ArrayList;
-import java.util.Map;
 
 public class Lab5 {
   public static void main(String[] args) {

@@ -1,7 +1,6 @@
 package DecisionTreeClasses;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 public class Matrix {
 
@@ -48,6 +47,14 @@ public class Matrix {
     return rows.size();
   }
 
+  public int getTopClassification() {
+    return classificationCounts.entrySet()
+      .parallelStream()
+      .max(Comparator.comparingInt(Map.Entry::getValue))
+      .get()
+      .getKey();
+  }
+
   public double getEntropy() {
     return classificationCounts.entrySet().parallelStream().mapToDouble(e -> {
       double fraction = e.getValue() / (double) numRows();
@@ -65,6 +72,26 @@ public class Matrix {
         return fraction * getRows(attribute, e.getKey()).getEntropy();
       })
       .sum();
+  }
+
+  public Set<Integer> getValues(int attribute) {
+    return attributeCounts.get(attribute).keySet();
+  }
+
+  public double getGain(int attribute) {
+    return getEntropy() - getEntropy(attribute);
+  }
+
+  public double getGainRatio(int attribute) {
+    double denom = -attributeCounts.get(attribute)
+      .entrySet()
+      .parallelStream()
+      .mapToDouble(e -> {
+        double fraction = e.getValue() / (double) numRows();
+        return fraction * log2(fraction);
+      })
+      .sum();
+    return Math.abs(denom) < 10e-6 ? 0 : getGain(attribute) / denom;
   }
 
   private double log2(double val) {
